@@ -16,7 +16,7 @@ export function proxy(request: NextRequest) {
 
   // Previne acesso à página de login se já estiver logado
   if (request.nextUrl.pathname.startsWith('/login') && sessionToken) {
-    return NextResponse.redirect(new URL('/app', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return NextResponse.next()

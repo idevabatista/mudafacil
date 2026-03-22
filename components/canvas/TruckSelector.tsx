@@ -1,98 +1,131 @@
 "use client"
 
 import React, { useState } from "react"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 
-const TRUCKS = [
-  { id: "c1", nome: "Fiorino", capacidade_m3: 3.0, ocupacaoAtual: 1.5, icon: "🚐" },
-  { id: "c2", nome: "HR", capacidade_m3: 8.0, ocupacaoAtual: 1.5, icon: "🚚" },
-  { id: "c3", nome: "3/4", capacidade_m3: 15.0, ocupacaoAtual: 1.5, icon: "🚛" },
-  { id: "c4", nome: "Baú", capacidade_m3: 25.0, ocupacaoAtual: 1.5, icon: "🕋" },
+export interface Truck {
+  id: string
+  nome: string
+  capacidade_m3: number
+  capacidade_kg: number
+  ocupacaoAtual: number
+  icon: string
+  description: string
+  dimensions: string
+}
+
+export const TRUCKS: Truck[] = [
+  { 
+    id: "c1", nome: "Fiorino", capacidade_m3: 3.0, capacidade_kg: 600, ocupacaoAtual: 1.5, icon: "🚐",
+    description: "Ideal para pequenas mudanças e itens avulsos.",
+    dimensions: "1.6 x 1.2 x 1.1m"
+  },
+  { 
+    id: "c2", nome: "HR / Baú Pequeno", capacidade_m3: 8.0, capacidade_kg: 1500, ocupacaoAtual: 3.2, icon: "🚚",
+    description: "Perfeito para apartamentos pequenos ou conjuntos de mobília.", 
+    dimensions: "3.2 x 1.6 x 1.6m"
+  },
+  { 
+    id: "c3", nome: "3/4 Truck", capacidade_m3: 15.0, capacidade_kg: 3500, ocupacaoAtual: 6.8, icon: "🚛",
+    description: "Recommended para mudanças de casa completa com todos os móveis.",
+    dimensions: "5.4 x 1.8 x 1.9m"
+  },
+  { 
+    id: "c4", nome: "Baú 6 Metros", capacidade_m3: 25.0, capacidade_kg: 7000, ocupacaoAtual: 18.5, icon: "🕋",
+    description: "Ideal para mudanças de longa distância ou residências grandes.",
+    dimensions: "6.0 x 2.0 x 2.2m"
+  },
 ]
 
-export function TruckSelector() {
-  const [selectedTruck, setSelectedTruck] = useState(TRUCKS[1]) // Inicia com HR
+interface TruckSelectorProps {
+  onTruckChange?: (truck: Truck) => void
+  currentVolume?: number
+}
 
-  const ocupacaoPercentual = Math.min(100, Math.max(0, (selectedTruck.ocupacaoAtual / selectedTruck.capacidade_m3) * 100));
-  const isOverCapacity = ocupacaoPercentual > 90;
+export function TruckSelector({ onTruckChange, currentVolume }: TruckSelectorProps) {
+  const [selectedId, setSelectedId] = useState<string>("c3")
+  const selectedTruck = TRUCKS.find(t => t.id === selectedId) || TRUCKS[2]
+
+  const handleSelect = (truck: Truck) => {
+    setSelectedId(truck.id)
+    onTruckChange?.({ ...truck, ocupacaoAtual: currentVolume ?? truck.ocupacaoAtual })
+  }
+
+  const displayVolume = currentVolume ?? selectedTruck.ocupacaoAtual
+  const ocupacaoPercentual = Math.min(100, (displayVolume / selectedTruck.capacidade_m3) * 100)
+  const isTooBig = displayVolume > selectedTruck.capacidade_m3
 
   return (
-    <div className="w-full mx-auto space-y-8">
-      {/* Título interno do widget (opcional, para dar contexto) */}
-      <div className="flex items-center justify-between px-1">
-        <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Tamanho Ideal</h4>
-        <Badge variant={isOverCapacity ? "destructive" : "secondary"} className="font-mono">
-          {selectedTruck.capacidade_m3}m³ Total
-        </Badge>
+    <div className="space-y-4 w-full">
+      <div className="flex items-center justify-between">
+        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Tipo de Veículo</h4>
+        {currentVolume !== undefined && currentVolume > 0 && (
+          <Badge variant="outline" className="text-[10px] font-bold border-white/10 bg-white/5 text-zinc-300">
+            {currentVolume.toFixed(1)} m³ a transportar
+          </Badge>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
-        {TRUCKS.map((truck) => {
-          const isSelected = selectedTruck.id === truck.id;
+      {/* Cards grid — Lalamove style */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {TRUCKS.map(truck => {
+          const isSelected = selectedId === truck.id
+          const fits = (currentVolume ?? truck.ocupacaoAtual) <= truck.capacidade_m3
+          const notFit = typeof currentVolume === "number" && currentVolume > 0 && !fits
+
           return (
-            <div
+            <button
               key={truck.id}
-              onClick={() => setSelectedTruck(truck)}
-              className={`group relative flex flex-col items-center p-4 md:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 ease-out 
-              ${isSelected 
-                ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(255,92,0,0.15)] -translate-y-1" 
-                : "border-border/50 bg-card hover:border-primary/40 hover:bg-secondary/40 hover:-translate-y-1 hover:shadow-lg"
-              }`}
+              onClick={() => handleSelect(truck)}
+              className={`flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 w-full
+                ${isSelected 
+                  ? "border-primary bg-primary/5" 
+                  : "border-white/[0.06] bg-zinc-900 hover:border-white/20"
+                } ${notFit ? "opacity-40" : ""}`}
             >
-              {isSelected && (
-                <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">
-                  ✓
+              {/* Icon / illustration */}
+              <div className="text-4xl shrink-0 mt-0.5 drop-shadow">{truck.icon}</div>
+
+              {/* Info */}
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`text-sm font-bold ${isSelected ? "text-primary" : "text-white"}`}>{truck.nome}</p>
+                  {isSelected && (
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-black shrink-0">✓</div>
+                  )}
                 </div>
-              )}
-              <div className={`text-4xl mb-3 transition-transform duration-300 ${isSelected ? "scale-110" : "group-hover:scale-110"}`}>
-                {truck.icon}
+                <p className="text-[11px] text-zinc-400 leading-snug">{truck.description}</p>
+                <div className="flex items-center gap-1 text-[10px] text-zinc-600 font-mono">
+                  📦 {truck.dimensions} · Até {truck.capacidade_kg.toLocaleString()} kg
+                </div>
               </div>
-              <div className={`font-bold text-center ${isSelected ? "text-primary" : "text-foreground"}`}>
-                {truck.nome}
-              </div>
-              <div className="text-xs font-medium text-muted-foreground mt-1">
-                Até {truck.capacidade_m3} m³
-              </div>
-            </div>
+            </button>
           )
         })}
       </div>
 
-      <div className="relative overflow-hidden p-6 rounded-2xl border border-border/50 bg-card shadow-sm space-y-4">
-        <div className="flex justify-between items-end">
-          <div className="space-y-1">
-            <h4 className="font-semibold text-foreground flex items-center gap-2">
-              Status da Carga <span className="text-muted-foreground font-normal">({selectedTruck.nome})</span>
-            </h4>
-            <p className="text-sm font-medium text-muted-foreground">
-              <strong className="text-foreground">{selectedTruck.ocupacaoAtual} m³</strong> ocupados de {selectedTruck.capacidade_m3} m³
-            </p>
-          </div>
-          <div className="text-right">
-            <span className={`text-3xl font-black tabular-nums tracking-tighter ${
-              isOverCapacity ? "text-destructive" : "text-primary"
-            }`}>
-              {ocupacaoPercentual.toFixed(1)}%
+      {/* Occupation bar */}
+      {displayVolume > 0 && (
+        <div className="bg-zinc-900 border border-white/[0.06] rounded-xl p-4 space-y-3">
+          <div className="flex justify-between items-end text-sm">
+            <span className="text-zinc-400 text-xs font-medium">Ocupação do {selectedTruck.nome}</span>
+            <span className={`font-black text-base ${isTooBig ? "text-red-400" : "text-primary"}`}>
+              {ocupacaoPercentual.toFixed(0)}%
             </span>
           </div>
-        </div>
-        
-        <div className="pt-2">
-          <Progress 
-            value={ocupacaoPercentual} 
-            className={`h-3 ${isOverCapacity ? "bg-destructive/20" : "bg-primary/20"}`}
-            // Note: Custom indicator color needs to be applied via CSS or a wrapped component if shadcn Progress doesn't support it directly.
-            // In shadcn, the indicator usually takes the bg-primary class by default. We can leave it as is, and it will be primary (Orange).
-          />
-        </div>
-        
-        {isOverCapacity && (
-          <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20 mt-4 font-medium animate-pulse">
-            <span>⚠️</span> Atenção: O espaço deste veículo está no limite ou excedido. Considere um caminhão maior.
+          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-700 ${isTooBig ? "bg-red-400" : "bg-primary"}`}
+              style={{ width: `${Math.min(100, ocupacaoPercentual)}%` }}
+            />
           </div>
-        )}
-      </div>
+          {isTooBig && (
+            <p className="text-xs text-red-400 font-semibold flex items-center gap-1">
+              ⚠️ Volume excede a capacidade. Selecione um caminhão maior.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

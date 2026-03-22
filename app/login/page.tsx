@@ -40,8 +40,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/30 p-4">
-      <Card className="w-full max-w-md shadow-lg border-primary/10">
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4 overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/80 to-background/40 z-10" />
+        <img 
+          src="/moving_truck_highway_night_bg.png" 
+          alt="MudaFácil Moving Truck"
+          className="w-full h-full object-cover opacity-60 scale-105 animate-slow-zoom"
+        />
+      </div>
+
+      <Card className="relative w-full max-w-md shadow-2xl border-white/10 bg-background/60 backdrop-blur-xl z-20">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
             <span className="text-4xl text-primary">📦</span>
