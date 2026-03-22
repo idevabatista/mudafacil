@@ -18,8 +18,8 @@ const DEFAULT_ITEMS = [
 export function ItemCatalog() {
   const [search, setSearch] = useState("")
 
-  const filteredItems = DEFAULT_ITEMS.filter(i => 
-    i.nome.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredItems = DEFAULT_ITEMS.filter(i =>
+    i.nome.toLowerCase().includes(search.toLowerCase()) ||
     i.categoria.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -30,11 +30,11 @@ export function ItemCatalog() {
           <h2 className="text-2xl font-black text-white tracking-tight">Catálogo de Itens</h2>
           <p className="text-muted-foreground text-sm">Gerencie seu inventário padrão e consulte volumes logísticos.</p>
         </div>
-        
+
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input 
-            placeholder="Buscar item ou categoria..." 
+          <Input
+            placeholder="Buscar item ou categoria..."
             className="pl-10 bg-white/5 border-white/10 h-12 rounded-2xl focus:border-primary/50 transition-all text-white"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -47,7 +47,7 @@ export function ItemCatalog() {
           <div key={item.id} className="group bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-[2rem] p-6 hover:border-primary/40 transition-all duration-300">
             <div className="flex justify-between items-start mb-6">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-500">
-                {React.cloneElement(item.icone as React.ReactElement, { size: 28 })}
+                React.cloneElement(item.icone as React.ReactElement, {size: 28 } as any)
               </div>
               <Badge variant="outline" className="bg-white/5 border-white/10 text-[9px] uppercase font-black tracking-widest px-3 py-1">
                 {item.categoria}
@@ -62,8 +62,8 @@ export function ItemCatalog() {
 
               <div className="flex items-center justify-between py-3 border-y border-white/5">
                 <div className="flex items-center gap-2">
-                   <Package size={14} className="text-zinc-500" />
-                   <span className="text-xs font-bold text-zinc-400">Volume</span>
+                  <Package size={14} className="text-zinc-500" />
+                  <span className="text-xs font-bold text-zinc-400">Volume</span>
                 </div>
                 <span className="text-sm font-black text-white">{item.volume} m³</span>
               </div>
@@ -81,9 +81,9 @@ export function ItemCatalog() {
 
       {filteredItems.length === 0 && (
         <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
-            <Package size={48} className="mx-auto text-white/5 mb-4" />
-            <h3 className="text-white font-bold">Nenhum item encontrado</h3>
-            <p className="text-zinc-500 text-sm mt-2">Tente buscar por termos mais genéricos.</p>
+          <Package size={48} className="mx-auto text-white/5 mb-4" />
+          <h3 className="text-white font-bold">Nenhum item encontrado</h3>
+          <p className="text-zinc-500 text-sm mt-2">Tente buscar por termos mais genéricos.</p>
         </div>
       )}
     </div>
