@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  TRIAL
+  PRO
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  name                   String?
+  email                  String?   @unique
+  emailVerified          DateTime?
+  image                  String?
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  trialEndsAt            DateTime?
+  plan                   Plan      @default(FREE)
+  accounts               Account[]
+  sessions               Session[]
+  mudancas               Mudanca[]
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ===================
+// MUDAFÁCIL ENTITIES
+// ===================
+
+model Item {
+  id              String      @id @default(cuid())
+  nome            String
+  categoria       String
+  icone_url       String?
+  largura_cm      Int
+  altura_cm       Int
+  profundidade_cm Int
+  peso_kg         Float
+  volume_m3       Float
+
+  mudancaItens    MudancaItem[]
+  posicoes        CargaLayoutItem[]
+}
+
+model Caminhao {
+  id              String         @id @default(cuid())
+  nome            String
+  tipo            String
+  capacidade_m3   Float
+  capacidade_kg   Float
+  comprimento_cm  Int
+  largura_cm      Int
+  altura_cm       Int
+  imagem_url      String?
+
+  mudancas        Mudanca[]
+  layouts         CargaLayout[]
+}
+
+model Transportadora {
+  id               String     @id @default(cuid())
+  nome             String
+  logo_url         String?
+  nota_media       Float      @default(0)
+  total_avaliacoes Int        @default(0)
+  cidade           String
+  tipos_caminhao   String[] // Array de strings (ex: ["Fiorino", "HR", "3/4", "Baú"])
+
+  cotacoes         Cotacao[]
+}
+
+model Mudanca {
+  id               String     @id @default(cuid())
+  user_id          String
+  endereco_origem  String
+  endereco_destino String
+  data_desejada    DateTime
+  status           String     @default("PENDENTE") // PENDENTE, COTACAO, AGENDADA, CONCLUIDA
+
+  caminhao_id      String?
+  caminhao         Caminhao?  @relation(fields: [caminhao_id], references: [id])
+  user             User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  itens            MudancaItem[]
+  cotacoes         Cotacao[]
+  layouts          CargaLayout[]
+
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model MudancaItem {
+  id         String   @id @default(cuid())
+  mudanca_id String
+  item_id    String
+  quantidade Int      @default(1)
+
+  mudanca    Mudanca  @relation(fields: [mudanca_id], references: [id], onDelete: Cascade)
+  item       Item     @relation(fields: [item_id], references: [id])
+}
+
+model Cotacao {
+  id                String         @id @default(cuid())
+  mudanca_id        String
+  transportadora_id String
+  preco_centavos    Int
+  data_disponivel   DateTime
+  seguro_incluso    Boolean        @default(false)
+  validade          DateTime
+
+  mudanca           Mudanca        @relation(fields: [mudanca_id], references: [id], onDelete: Cascade)
+  transportadora    Transportadora @relation(fields: [transportadora_id], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime       @default(now())
+}
+
+model CargaLayout {
+  id                  String             @id @default(cuid())
+  mudanca_id          String
+  caminhao_id         String
+  ocupacao_percentual Float              @default(0)
+
+  mudanca             Mudanca            @relation(fields: [mudanca_id], references: [id], onDelete: Cascade)
+  caminhao            Caminhao           @relation(fields: [caminhao_id], references: [id])
+
+  itens_posicionados  CargaLayoutItem[]
+}
+
+model CargaLayoutItem {
+  id              String      @id @default(cuid())
+  carga_layout_id String
+  item_id         String
+  x               Int         @default(0)
+  y               Int         @default(0)
+  rotacao         Int         @default(0)
+
+  cargaLayout     CargaLayout @relation(fields: [carga_layout_id], references: [id], onDelete: Cascade)
+  item            Item        @relation(fields: [item_id], references: [id])
+}

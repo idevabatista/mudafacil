@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mudafacil.com.br/sitemap.xml
