@@ -6,7 +6,7 @@ import authConfig from "./auth.config"
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || "7b5398d5705342a7b63f7362f689037e5ec4682570073286f9ee5b19b673ab74",
   trustHost: true,
   debug: process.env.NODE_ENV === "development",
   ...authConfig,
