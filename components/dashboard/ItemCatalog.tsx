@@ -47,7 +47,7 @@ export function ItemCatalog() {
           <div key={item.id} className="group bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-[2rem] p-6 hover:border-primary/40 transition-all duration-300">
             <div className="flex justify-between items-start mb-6">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-500">
-                React.cloneElement(item.icone as React.ReactElement, {size: 28 } as any)
+                React.cloneElement(item.icone as React.ReactElement, {size: 28 } as Record<string, unknown>)
               </div>
               <Badge variant="outline" className="bg-white/5 border-white/10 text-[9px] uppercase font-black tracking-widest px-3 py-1">
                 {item.categoria}
